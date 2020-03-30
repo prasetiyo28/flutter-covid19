@@ -1,6 +1,7 @@
 import 'package:corrona_frontend/page/countries.dart';
 import 'package:corrona_frontend/page/home.dart';
 import 'package:flutter/material.dart';
+import 'package:splashscreen/splashscreen.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,6 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
         // This is the theme of your application.
@@ -23,8 +25,20 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.red,
       ),
-      home: Home(),
+      
+      home: new SplashScreen(
+      seconds: 5,
+      navigateAfterSeconds: new Home(),
+      image: new Image.asset('assets/icon.png'),
+      backgroundColor: Color.fromRGBO(33, 37, 41, 100),
+      // styleTextUnderTheLoader: new TextStyle(),
+      photoSize: 40.0,
+      loaderColor: Colors.red
+),
     );
+    
   }
+
+  
 }
 
