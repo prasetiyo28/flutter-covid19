@@ -211,7 +211,7 @@ class _HomeState extends State<Home> {
                                 ),
                               ),
                               Text(
-                                "Published " + new DateFormat.yMMMd("en_US").format(article.publishedDate),
+                                "Published " + new DateFormat.yMMMd().format(article.publishedDate),
                                 style: TextStyle(
                                   fontSize: 8,
                                 ),
