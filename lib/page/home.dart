@@ -1,9 +1,11 @@
 import 'package:corrona_frontend/model/modelCorona.dart';
+import 'package:corrona_frontend/model/modelNews.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'package:solid_bottom_sheet/solid_bottom_sheet.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 // EXCLUDE_FROM_GALLERY_DOCS_END
 import 'package:charts_flutter/flutter.dart' as charts;
@@ -25,6 +27,7 @@ class ClicksPerYear {
 
 class _HomeState extends State<Home> {
   Corrona corrona;
+  List<News> articles = [];
   int _confirmed = 0;
   int _recovered = 0;
   int _deaths = 0;
@@ -71,8 +74,21 @@ class _HomeState extends State<Home> {
        _recovered = corrona.recovered.value;
        _deaths = corrona.death.value;
        _lastUpdate = corrona.lastUpdate;
-  
-       
+      });
+    }
+  }
+
+  Future<Null> _fetchDataNews() async {
+
+    final response = await http.get("https://corona-api-news.herokuapp.com/id/get");
+    // print(response.body);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final jsonContents = data['content'];
+      List<News> contents = jsonContents.map<News>((content) => News.fromJson(content)).toList();
+
+      setState(() {
+        articles = contents;
       });
     }
   }
@@ -82,6 +98,7 @@ class _HomeState extends State<Home> {
     super.initState();
     // _value;
     _fetchData(_url);
+    _fetchDataNews();
   }
 
   
@@ -136,66 +153,121 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
+
+    var news = articles.map<Widget>((article) => Container(
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            InkWell(
+              onTap: () => launch(article.link),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(6,5,6,5),
+                    child:
+                    Image.network(
+                        article.coverImage,
+                        height: 80,
+                        width: 80,
+                        fit: BoxFit.cover
+                    ),
+                  ),
+                  Container(
+                      width: 285,
+                      height: 120,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            article.title,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: cConfirmed
+                            ),
+                          ),
+                          Text(
+                            article.content.substring(0, 120)+"...",
+                            textAlign: TextAlign.justify,
+                            style: TextStyle(
+                              fontSize: 11,
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                article.source,
+                                style: TextStyle(
+                                  fontSize: 8,
+                                ),
+                              ),
+                              Text(
+                                "Published " + new DateFormat.yMMMd("en_US").format(article.publishedDate),
+                                style: TextStyle(
+                                  fontSize: 8,
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      )
+                  )
+                ],
+              )
+            ),
+         ],
+        ),
+      )
+    ).toList();
+
     return Scaffold(
       bottomSheet: SolidBottomSheet(
-        minHeight: 150,
-        headerBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.black26,
-            borderRadius: BorderRadius.only(
-                topRight: Radius.circular(20), topLeft: Radius.circular(20)),
-          ),
-          height: 20,
-          child: Center(
-            child: Container(child: Icon(Icons.minimize)),
-          ),
-        ),
-        body: Container(
-          color: Colors.black26,
-          height: 30,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 30),
-            child: ListView(
-              children: <Widget>[
-                Column(
-                  children: <Widget>[
-                    Text("Daily News Update"),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Container(
-                              width: 200,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    "Tito Karnavian Dan Istri Negatif Corona",
-                                    textAlign: TextAlign.start,
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  Text("16 Mar, 17:01",
-                                      textAlign: TextAlign.start)
-                                ],
-                              ),
-                            ),
-                            Container(
-                              color: Colors.grey,
-                              width: 80,
-                              height: 80,
-                            )
-                          ],
-                        ),
-                      ),
-                    )
-                  ],
-                )
-              ],
+          minHeight: 150,
+          toggleVisibilityOnTap: true,
+          draggableBody: true,
+          headerBar: Container(
+            decoration: BoxDecoration(
+              color: Colors.black26,
+              borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(20), topLeft: Radius.circular(20)),
             ),
+            height: 20,
+            child: Icon(Icons.minimize, size: 30),
           ),
-        ),
+          body: Container(
+            color: Colors.black26,
+            height: 30,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 30),
+              child: ListView(
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Text("Daily News Update"),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: news
+                          ),
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )
       ),
       body: Container(
         child: Padding(
@@ -206,21 +278,22 @@ class _HomeState extends State<Home> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Row(children: <Widget>[
-                    Image.asset("assets/icon.png",width: 20,),
-                  Text(
-                    "Covid",
-                    textAlign: TextAlign.left,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  Row(
+                    children: <Widget>[
+                      Image.asset("assets/icon.png",width: 20,),
+                      Text(
+                        "Covid",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        "19",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.red),
+                      ),
+                    ],
                   ),
-                  Text(
-                    "19",
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.red),
-                  ),
-                  ],),
-
                   Icon(Icons.notifications)
                 ],
               ),
@@ -232,8 +305,8 @@ class _HomeState extends State<Home> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(_lastUpdate == null ? "day" : 
-                          "Last Updated," + DateFormat('dd MMM , kk:mm').format(_lastUpdate),
+                        Text(_lastUpdate == null ? "day" :
+                        "Last Updated," + DateFormat('dd MMM , kk:mm').format(_lastUpdate),
                           style: TextStyle(fontSize: 8),
                         ),
                         Text(
@@ -248,7 +321,7 @@ class _HomeState extends State<Home> {
                         DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             items: [
-                             
+
                               DropdownMenuItem<String>(
                                 value: "1",
                                 child: Text(
@@ -266,13 +339,13 @@ class _HomeState extends State<Home> {
                             ],
                             onChanged: (value) {
                               setState(() {
-                                
+
                                 _value = value;
                                 _change(_value);
                               });
                             },
-                             value: _value,
-                            
+                            value: _value,
+
                           ),
                         ),
                         // Text(
@@ -337,7 +410,7 @@ class _HomeState extends State<Home> {
                                 Text(
                                   "Deaths",
                                   style:
-                                      TextStyle(fontSize: 10, color: cDeaths),
+                                  TextStyle(fontSize: 10, color: cDeaths),
                                 ),
                                 Text(_deaths == 0 ? "kososng" : _deaths.toString(),
                                     style: TextStyle(

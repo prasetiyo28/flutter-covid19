@@ -27,14 +27,14 @@ class MyApp extends StatelessWidget {
       ),
       
       home: new SplashScreen(
-      seconds: 5,
-      navigateAfterSeconds: new Home(),
-      image: new Image.asset('assets/icon.png'),
-      backgroundColor: Color.fromRGBO(33, 37, 41, 100),
-      // styleTextUnderTheLoader: new TextStyle(),
-      photoSize: 40.0,
-      loaderColor: Colors.red
-),
+        seconds: 5,
+        navigateAfterSeconds: new Home(),
+        image: new Image.asset('assets/icon.png'),
+        backgroundColor: Color.fromRGBO(33, 37, 41, 100),
+        // styleTextUnderTheLoader: new TextStyle(),
+        photoSize: 40.0,
+        loaderColor: Colors.red
+      ),
     );
     
   }
