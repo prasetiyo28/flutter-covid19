@@ -1,8 +1,11 @@
+import 'dart:ffi';
+
 import 'package:corrona_frontend/model/modelCorona.dart';
 import 'package:corrona_frontend/model/modelNews.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'dart:math';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:ui';
 import 'dart:convert';
 import 'package:solid_bottom_sheet/solid_bottom_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -31,7 +34,9 @@ class _HomeState extends State<Home> {
   int _confirmed = 0;
   int _recovered = 0;
   int _deaths = 0;
+  bool _newsOpen = false;
   DateTime _lastUpdate;
+  NewsList newsListData;
 
   
   int _counter = 0;
@@ -57,10 +62,8 @@ class _HomeState extends State<Home> {
     }
   }
 
- 
-
   Future<Null> _fetchData(_url) async {
-    
+
     final response = await http.get(_url);
     // print(response.body);
     if (response.statusCode == 200) {
@@ -74,31 +77,31 @@ class _HomeState extends State<Home> {
        _recovered = corrona.recovered.value;
        _deaths = corrona.death.value;
        _lastUpdate = corrona.lastUpdate;
+       newsListData = new NewsList();
       });
     }
   }
 
-  Future<Null> _fetchDataNews() async {
-
-    final response = await http.get("https://corona-api-news.herokuapp.com/id/get");
-    // print(response.body);
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final jsonContents = data['content'];
-      List<News> contents = jsonContents.map<News>((content) => News.fromJson(content)).toList();
-
-      setState(() {
-        articles = contents;
-      });
+  ScrollController _newsController;
+  _newsScrollController() {
+    if (_newsController.offset >= _newsController.position.maxScrollExtent &&
+        !_newsController.position.outOfRange) {
+      newsListData.prev();
+    }
+    if (_newsController.offset <= _newsController.position.minScrollExtent &&
+        !_newsController.position.outOfRange) {
+      newsListData.next();
     }
   }
 
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    _newsController = ScrollController();
+    _newsController.addListener(_newsScrollController);
     // _value;
     _fetchData(_url);
-    _fetchDataNews();
   }
 
   
@@ -107,6 +110,12 @@ class _HomeState extends State<Home> {
     Color cDeaths = Color.fromRGBO(248, 64, 58, 1.0);
     Color cConfirmed = Color.fromRGBO(251, 188, 36, 1.0);
     Color cRecovered = Color.fromRGBO(253, 217, 132, 1.0);
+
+    ScreenUtil.init(context,
+        width: 411.42857142857144,
+        height: 843.4285714285714,
+        allowFontScaling: true
+    );
 
     var data = [
       ClicksPerYear('2016', _deaths, cDeaths),
@@ -154,124 +163,42 @@ class _HomeState extends State<Home> {
       ),
     );
 
-    var news = articles.map<Widget>((article) => Container(
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            InkWell(
-              onTap: () => launch(article.link),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(6,5,6,5),
-                    child:
-                    Image.network(
-                        article.coverImage,
-                        height: 80,
-                        width: 80,
-                        fit: BoxFit.cover
-                    ),
-                  ),
-                  Container(
-                      width: 285,
-                      height: 120,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            article.title,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: cConfirmed
-                            ),
-                          ),
-                          Text(
-                            article.content.substring(0, 120)+"...",
-                            textAlign: TextAlign.justify,
-                            style: TextStyle(
-                              fontSize: 11,
-                            ),
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(
-                                article.source,
-                                style: TextStyle(
-                                  fontSize: 8,
-                                ),
-                              ),
-                              Text(
-                                "Published " + new DateFormat.yMMMd().format(article.publishedDate),
-                                style: TextStyle(
-                                  fontSize: 8,
-                                ),
-                              ),
-                            ],
-                          )
-                        ],
-                      )
-                  )
-                ],
-              )
-            ),
-         ],
-        ),
-      )
-    ).toList();
-
     return Scaffold(
       bottomSheet: SolidBottomSheet(
-          minHeight: 150,
+          minHeight: 150.h,
+          maxHeight: 800.h,
           toggleVisibilityOnTap: true,
           draggableBody: true,
+          showOnAppear: _newsOpen,
           headerBar: Container(
             decoration: BoxDecoration(
               color: Colors.black26,
               borderRadius: BorderRadius.only(
                   topRight: Radius.circular(20), topLeft: Radius.circular(20)),
             ),
-            height: 20,
-            child: Icon(Icons.minimize, size: 30),
+            height: 20.h,
+            child: Icon(Icons.minimize, size: 30.w),
           ),
           body: Container(
             color: Colors.black26,
-            height: 30,
+            height: 30.h,
             child: Padding(
-              padding: const EdgeInsets.only(top: 30),
-              child: ListView(
-                children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      Text("Daily News Update"),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: news
-                          ),
-                        ),
-                      )
-                    ],
-                  )
-                ],
-              ),
+                padding: EdgeInsets.only(top: 30.h),
+                child: ListView(
+                  controller: _newsController,
+                  children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.all(8.h),
+                        child: newsListData
+                    )
+                  ],
+                )
             ),
           )
       ),
       body: Container(
         child: Padding(
-          padding: const EdgeInsets.only(top: 40.0, right: 15, left: 15),
+          padding: EdgeInsets.only(top: 40, right: 15, left: 15),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -428,6 +355,196 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class NewsList extends StatefulWidget {
+  _NewsListState newsListState = _NewsListState();
+
+  Future<double> next() async {
+    return await newsListState._fetchDataNewsNext();
+  }
+  Future<double> prev() async {
+    return await newsListState._fetchDataNewsPrev();
+  }
+
+  @override
+  _NewsListState createState() => newsListState;
+}
+
+class _NewsListState extends State<NewsList> {
+  List<News> articles = [];
+  Color titleColor = Color.fromRGBO(251, 188, 36, 1.0);
+
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _fetchDataNews();
+  }
+
+  Future<Null> _fetchDataNews() async {
+
+    final response = await http.get("https://corona-api-news.herokuapp.com/id/get");
+    // print(response.body);
+    if (response.statusCode == 200 && this.mounted) {
+      final data = jsonDecode(response.body);
+      final jsonContents = data['content'];
+      List<News> contents = jsonContents.map<News>((content) => News.fromJson(content)).toList();
+
+      setState(() {
+        articles = contents;
+      });
+    }
+  }
+
+  Future<double> _fetchDataNewsPrev() async {
+    final id = articles[articles.length - 1].id;
+
+    final response = await http.get("https://corona-api-news.herokuapp.com/id/"+id+"/prev");
+    if (response.statusCode == 200 && this.mounted) {
+      final data = jsonDecode(response.body);
+      final jsonContents = data['content'];
+      List<News> contents = articles;
+      List<News> newContents = jsonContents.map<News>((content) => News.fromJson(content)).toList();
+//      contents.removeRange(0, newContents.length);
+      newContents.insertAll(0, contents);
+
+      ScreenUtil.init(context,
+          width: 411.42857142857144,
+          height: 843.4285714285714,
+          allowFontScaling: true
+      );
+
+      setState(() {
+        articles = newContents;
+      });
+
+      return (contents.length.toDouble() - 3.62) * 120.h;
+    }
+  }
+
+  Future<double> _fetchDataNewsNext() async {
+    final id = articles[0].id;
+
+    final response = await http.get("https://corona-api-news.herokuapp.com/id/"+id+"/next");
+    if (response.statusCode == 200 && this.mounted) {
+      final data = jsonDecode(response.body);
+      final jsonContents = data['content'];
+      List<News> contents = articles;
+      List<News> newContents = jsonContents.map<News>((content) => News.fromJson(content)).toList();
+//      contents.removeRange(contents.length-newContents.length, contents.length);
+      contents.insertAll(0, newContents);
+
+      setState(() {
+        articles = contents;
+      });
+
+      ScreenUtil.init(context,
+          width: 411.42857142857144,
+          height: 843.4285714285714,
+          allowFontScaling: true
+      );
+
+      return newContents.length.toDouble() * 120.h;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ScreenUtil.init(context,
+        width: 411.42857142857144,
+        height: 843.4285714285714,
+        allowFontScaling: true
+    );
+    var news = articles.map<Widget>((article) {
+      String content = article.content;
+      if (content.length > 120) {
+        content = content.substring(0, 120) + "...";
+      }
+      return Container(
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            InkWell(
+                onTap: () => launch(article.link),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: ScreenUtil().setWidth(6),
+                          vertical: ScreenUtil().setHeight(5)
+                      ),
+                      child:
+                      Image.network(
+                          article.coverImage,
+                          height: 80.h,
+                          width: 80.w,
+                          fit: BoxFit.cover
+                      ),
+                    ),
+                    Container(
+                        width: 285.w,
+                        height: 120.h,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              article.title,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                  fontSize: 13.ssp,
+                                  fontWeight: FontWeight.bold,
+                                  color: titleColor
+                              ),
+                            ),
+                            Text(
+                              content,
+                              textAlign: TextAlign.justify,
+                              style: TextStyle(
+                                fontSize: 11.ssp,
+                              ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(
+                                  article.source,
+                                  style: TextStyle(
+                                    fontSize: 8.ssp,
+                                  ),
+                                ),
+                                Text(
+                                  "Published " + new DateFormat.yMMMd().format(
+                                      article.publishedDate),
+                                  style: TextStyle(
+                                    fontSize: 8.ssp,
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        )
+                    )
+                  ],
+                )
+            ),
+          ],
+        ),
+      );
+    }).toList();
+    return Container(
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: news
       ),
     );
   }

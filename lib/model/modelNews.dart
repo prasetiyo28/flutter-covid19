@@ -21,12 +21,16 @@ class News {
   );
 
   factory News.fromJson(dynamic json) {
+    String content = json['content'] as String;
+    if (content == null) {
+      content = json['description'] as String;
+    }
     return News(
-      json['id'] as String,
+      json['_id'] as String,
       json['source']['name'] as String,
       json['author'] as String,
       json['title'] as String,
-      json['content'] as String,
+      content,
       json['url'] as String,
       json['urlToImage'] as String,
       DateTime.parse(json['publishedAt'] as String),

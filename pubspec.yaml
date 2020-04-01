@@ -28,6 +28,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   charts_flutter:
   url_launcher:
+  flutter_screenutil:
 dev_dependencies:
   flutter_test:
     sdk: flutter
