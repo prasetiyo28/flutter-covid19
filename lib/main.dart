@@ -1,9 +1,17 @@
 import 'package:Covid19Info/page/countries.dart';
 import 'package:Covid19Info/page/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:splashscreen/splashscreen.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  // force apps to always portrait
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((_) {
+    runApp(new MyApp());
+  });
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
