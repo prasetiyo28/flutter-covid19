@@ -1,5 +1,5 @@
-import 'package:corrona_frontend/page/countries.dart';
-import 'package:corrona_frontend/page/home.dart';
+import 'package:Covid19Info/page/countries.dart';
+import 'package:Covid19Info/page/home.dart';
 import 'package:flutter/material.dart';
 import 'package:splashscreen/splashscreen.dart';
 
