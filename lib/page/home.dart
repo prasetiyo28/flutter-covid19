@@ -260,7 +260,7 @@ class _HomeState extends State<Home> {
                                   style: TextStyle(
                                       fontSize: 10, color: cConfirmed),
                                 ),
-                                Text(_confirmed == 0 ? "kososng" : _confirmed.toString(),
+                                Text(_confirmed == 0 ? "kosong" : _confirmed.toString(),
                                     style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold)),
@@ -276,7 +276,7 @@ class _HomeState extends State<Home> {
                                   style: TextStyle(
                                       fontSize: 10, color: cRecovered),
                                 ),
-                                Text(_recovered == 0 ? "kososng" : _recovered.toString(),
+                                Text(_recovered == 0 ? "kosong" : _recovered.toString(),
                                     style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold)),
@@ -292,7 +292,7 @@ class _HomeState extends State<Home> {
                                   style:
                                   TextStyle(fontSize: 10, color: cDeaths),
                                 ),
-                                Text(_deaths == 0 ? "kososng" : _deaths.toString(),
+                                Text(_deaths == 0 ? "kosong" : _deaths.toString(),
                                     style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold)),
@@ -517,7 +517,7 @@ class _NewsState extends State<NewsStateful> {
                           minHeight: 100.h
                       ),
                       child: Padding(
-                          padding: EdgeInsets.fromLTRB(15.w, 8.h, 5.w, 8.h),
+                          padding: EdgeInsets.fromLTRB(15.w, 3.h, 5.w, 10.h),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
