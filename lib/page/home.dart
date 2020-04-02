@@ -34,8 +34,8 @@ class _HomeState extends State<Home> {
   int _confirmed = 0;
   int _recovered = 0;
   int _deaths = 0;
-  bool _newsOpen = false;
   DateTime _lastUpdate;
+  String localization = 'id';
 
 
   int _counter = 0;
@@ -48,6 +48,7 @@ class _HomeState extends State<Home> {
           setState(() {
             _url = "https://covid19.mathdro.id/api/";
             _fetchData(_url);
+            localization = "en";
           });
         }
         break;
@@ -56,6 +57,7 @@ class _HomeState extends State<Home> {
           setState(() {
             _url = "https://covid19.mathdro.id/api/countries/id";
             _fetchData(_url);
+            localization = "id";
           });
         }
     }
@@ -84,7 +86,6 @@ class _HomeState extends State<Home> {
     // TODO: implement initState
     super.initState();
 
-    // _value;
     _fetchData(_url);
   }
 
@@ -148,7 +149,7 @@ class _HomeState extends State<Home> {
     );
 
     return Scaffold(
-      bottomSheet: BottomSheetStateless(),
+      bottomSheet: BottomSheetStateless(localization: this.localization,),
       body: Container(
         child: Padding(
           padding: EdgeInsets.only(top: 40, right: 15, left: 15),
@@ -314,6 +315,9 @@ class _HomeState extends State<Home> {
 }
 
 class BottomSheetStateless extends StatelessWidget {
+  final String localization;
+  const BottomSheetStateless({ this.localization }) : super();
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -322,9 +326,15 @@ class BottomSheetStateless extends StatelessWidget {
         height: 843.4285714285714,
         allowFontScaling: true
     );
+
+    String title = "Popular Covid 19 News";
+    if (this.localization == "id") {
+      title = "Berita Covid 19 Terkini";
+    }
+
     return SolidBottomSheet(
-        minHeight: 400.h,
-        maxHeight: 750.h,
+        minHeight: 300.h,
+        maxHeight: 720.h,
         toggleVisibilityOnTap: true,
         draggableBody: true,
         headerBar: Container(
@@ -333,20 +343,43 @@ class BottomSheetStateless extends StatelessWidget {
             borderRadius: BorderRadius.only(
                 topRight: Radius.circular(20), topLeft: Radius.circular(20)),
           ),
-          height: 20.h,
-          child: Icon(Icons.minimize, size: 30.w),
+          height: 50.h,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Icon(
+                  Icons.minimize,
+                  size: 30.w,
+                  color: Color.fromRGBO(253, 217, 132, 1.0)
+              ),
+              Container(
+                  transform: Matrix4.translationValues(0.0, 20.0, 0.0),
+                  padding: EdgeInsets.only(left: 15.w),
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                        fontSize: 15.ssp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white
+                    ),
+                  )
+              ),
+            ],
+          ),
         ),
         body: Container(
             color: Colors.black26,
-            height: 30.h,
-            child: NewsListStateful()
+            child: NewsListStateful(localization: this.localization,)
         )
     );
   }
 }
 
 class NewsListStateful extends StatefulWidget {
-  NewsListStateful() : super();
+  final String localization;
+  const NewsListStateful({ this.localization }) : super();
 
   @override
   _NewsListState createState() => _NewsListState();
@@ -360,8 +393,7 @@ class _NewsListState extends State<NewsListStateful> {
 
 
   Future<void> _fetchDataNews() async {
-    print('fetching data');
-    final response = await http.get("https://corona-api-news.herokuapp.com/id/get");
+    final response = await http.get("https://corona-api-news.herokuapp.com/" + widget.localization + "/get");
     // print(response.body);
     if (response.statusCode == 200 && this.mounted) {
       final data = jsonDecode(response.body);
@@ -377,7 +409,7 @@ class _NewsListState extends State<NewsListStateful> {
   Future<void> _fetchDataNewsPrev() async {
     final id = articles[articles.length - 1].id;
 
-    final response = await http.get("https://corona-api-news.herokuapp.com/id/"+id+"/prev");
+    final response = await http.get("https://corona-api-news.herokuapp.com/" + widget.localization + "/" + id + "/prev");
     if (response.statusCode == 200 && this.mounted) {
       final data = jsonDecode(response.body);
       final jsonContents = data['content'];
@@ -392,47 +424,15 @@ class _NewsListState extends State<NewsListStateful> {
     }
   }
 
-  Future<void> _fetchDataNewsNext() async {
-    final id = articles[0].id;
-
-    final response = await http.get("https://corona-api-news.herokuapp.com/id/"+id+"/next");
-    if (response.statusCode == 200 && this.mounted) {
-      final data = jsonDecode(response.body);
-      final jsonContents = data['content'];
-      List<News> contents = articles;
-      List<News> newContents = jsonContents.map<News>((content) => News.fromJson(content)).toList();
-//      contents.removeRange(contents.length-newContents.length, contents.length);
-      contents.insertAll(0, newContents);
-
-      setState(() {
-        articles = contents;
-      });
-    }
-  }
-
   void initState() {
     // TODO: implement initState
-//    _newsController = ScrollController();
-//    _newsController.addListener(_newsScrollController);
 
     super.initState();
   }
 
-//  ScrollController _newsController;
-//  _newsScrollController() {
-//    if (_newsController.offset >= _newsController.position.maxScrollExtent &&
-//        !_newsController.position.outOfRange) {
-////      _fetchDataNewsPrev();
-//    }
-//    if (_newsController.offset <= _newsController.position.minScrollExtent &&
-//        !_newsController.position.outOfRange) {
-////      newsListData.next();
-////      _fetchDataNewsNext();
-//    }
-//  }
-
   @override
   Widget build(BuildContext context) {
+
     ScreenUtil.init(context,
         width: 411.42857142857144,
         height: 843.4285714285714,
@@ -454,11 +454,10 @@ class _NewsListState extends State<NewsListStateful> {
               await _fetchDataNewsPrev();
               _refreshController.loadComplete();
             },
-            child: ListView.builder(
+            child: ListView.separated(
+                separatorBuilder: (BuildContext context, int index) => Divider(color: Colors.white10, indent: 20.w, endIndent: 20.w, thickness: 1.25.h),
                 shrinkWrap: true,
-//                controller: _newsController,
                 itemCount: articles.length,
-//                    itemExtent: 130.h,
                 itemBuilder: (BuildContext context, int index) {
                   return NewsStateful(key: UniqueKey(), article: articles[index]);
                 }
@@ -511,13 +510,13 @@ class _NewsState extends State<NewsStateful> {
                 children: <Widget>[
                   ConstrainedBox(
                       constraints: BoxConstraints(
-                          maxHeight: 130.h,
+                          maxHeight: 200.h,
                           maxWidth: 310.w,
                           minWidth: 310.w,
                           minHeight: 100.h
                       ),
                       child: Padding(
-                          padding: EdgeInsets.fromLTRB(15.w, 3.h, 5.w, 10.h),
+                          padding: EdgeInsets.fromLTRB(15.w, 7.h, 5.w, 10.h),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -565,7 +564,7 @@ class _NewsState extends State<NewsStateful> {
                   Padding(
                       padding: EdgeInsets.symmetric(
                           horizontal: ScreenUtil().setWidth(6),
-                          vertical: ScreenUtil().setHeight(5)
+                          vertical: ScreenUtil().setHeight(10)
                       ),
                       child: ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
