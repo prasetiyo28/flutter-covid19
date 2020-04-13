@@ -42,7 +42,7 @@ class _HomeState extends State<Home> {
   String localization = 'id';
   String country = "Indonesia";
 
-  int _radioValue1 = -1;
+  int _radioValue1 = 1;
   
   
 
