@@ -204,7 +204,7 @@ packages:
     source: sdk
     version: "0.0.99"
   solid_bottom_sheet:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: solid_bottom_sheet
       url: "https://pub.dartlang.org"

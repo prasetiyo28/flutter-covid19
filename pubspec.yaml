@@ -30,10 +30,10 @@ dependencies:
   charts_flutter:
   url_launcher:
   flutter_screenutil:
+  solid_bottom_sheet: ^0.1.9
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  solid_bottom_sheet: ^0.1.9
   flutter_launcher_icons: "^0.7.3"
 
 flutter_icons:

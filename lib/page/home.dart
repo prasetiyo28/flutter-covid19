@@ -334,7 +334,7 @@ class BottomSheetStateless extends StatelessWidget {
 
     return SolidBottomSheet(
         minHeight: 300.h,
-        maxHeight: 720.h,
+        maxHeight: 763.h,
         toggleVisibilityOnTap: true,
         draggableBody: true,
         headerBar: Container(
